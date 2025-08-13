@@ -1,55 +1,55 @@
-from pip._internal.cli.cmdoptions import log
+from CursorDelPool import CursorDelPool
 from Usuario import Usuario
-# from conexion import Conexion
 from logger_base import log
-# from cursor_del_pool import CursorDelPool
 
 class UsuarioDAO:
-    # """
     # DAO significa: Data Access Object
     # CRUD significa:
-    #                 Create -> Insertar
-    #                 Read   -> Seleccionar
-    #                 Update -> Actualizar
-    #                 Delete -> Eliminar
-    # """
-    _SELECCIONAR = 'SELECT * FROM usuario ORDER BY id_usuario'
-    _INSERTAR = 'INSERT INTO usuario(id_usuario, username, password) VALUES (%s, %s, %s)'
-    _ACTUALIZAR = 'UPDATE usuario SET id_usuario=%s, username=%s, password=%s WHERE id_usuario=%s'
+    #   Create -> Insertar
+    #   Read   -> Seleccionar
+    #   Update -> Actualizar
+    #   Delete -> Eliminar
+
+    _SELECCIONAR = 'SELECT id_usuario, username, password FROM usuario ORDER BY id_usuario'
+    _INSERTAR = 'INSERT INTO usuario(username, password) VALUES (%s, %s)'
+    _ACTUALIZAR = 'UPDATE usuario SET username=%s, password=%s WHERE id_usuario=%s'
     _ELIMINAR = 'DELETE FROM usuario WHERE id_usuario=%s'
 
-    # Definimos los metodos de clase
     @classmethod
     def seleccionar(cls):
         with CursorDelPool() as cursor:
             cursor.execute(cls._SELECCIONAR)
             registros = cursor.fetchall()
-            usuarios = [] # Creamos una lista
+            usuarios = []
             for registro in registros:
-                usuario = Usuario(registro[0], registro[1], registro[2], registro[3])
+                usuario = Usuario(registro[0], registro[1], registro[2])
                 usuarios.append(usuario)
+            log.info(f'Selección de usuarios: {usuarios}')
             return usuarios
 
     @classmethod
     def insertar(cls, usuario):
         with CursorDelPool() as cursor:
-            valores = (usuario.id_usuario, usuario.username, usuario.password)
+            valores = (usuario.username, usuario.password)
             cursor.execute(cls._INSERTAR, valores)
-            log.debug(f'Usuario Insertada: {usuario}')
+            cursor.connection.commit()  # <-- Agrega esto
+            log.info(f'Usuario insertado: {usuario}')
             return cursor.rowcount
 
     @classmethod
     def actualizar(cls, usuario):
         with CursorDelPool() as cursor:
-            valores = (usuario.id_usuario, usuario.username, usuario.password)
+            valores = (usuario.username, usuario.password, usuario.id_usuario)
             cursor.execute(cls._ACTUALIZAR, valores)
-            log.debug(f'Usuario actualizada: {usuario}')
+            cursor.connection.commit()  # <-- Agrega esto
+            log.info(f'Usuario actualizado: {usuario}')
             return cursor.rowcount
 
     @classmethod
     def eliminar(cls, usuario):
         with CursorDelPool() as cursor:
-            valores =  (usuario.id_usuario,)
+            valores = (usuario.id_usuario,)
             cursor.execute(cls._ELIMINAR, valores)
-            log.debug(f'Los objetos eliminados son: {usuario}')
+            cursor.connection.commit()  # <-- Agrega esto
+            log.info(f'Usuario eliminado: {usuario}')
             return cursor.rowcount
