@@ -31,7 +31,3 @@ class Usuario:
     def __str__(self):
         return f'Usuario(id_usuario={self.id_usuario}, username="{self.username}", password="{self.password}")'
 
-
-usuario1 = Usuario(1, "Gabriel", "1234") 
-
-print (usuario1.username)
